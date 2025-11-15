@@ -236,10 +236,10 @@ class BIM_ProjectManager:
                 self.site.Latitude = self.form.siteLatitude.value()
             elif hasattr(self.site, "RefLatitude"):
                 self.site.RefLatitude = self.form.siteLatitude.value()
-            if hasattr(self.site, "NorthDeviation"):
-                self.site.NorthDeviation = self.form.siteDeviation.value()
-            elif hasattr(self.site, "Declination"):
+            if hasattr(self.site, "Declination"):
                 self.site.Declination = self.form.siteDeviation.value()
+            elif hasattr(self.site, "NorthDeviation"):
+                self.site.NorthDeviation = self.form.siteDeviation.value()
             elev = FreeCAD.Units.Quantity(self.form.siteElevation.text()).Value
             if hasattr(self.site, "Elevation"):
                 self.site.Elevation = elev
