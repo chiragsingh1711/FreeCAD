@@ -427,15 +427,23 @@ App::DocumentObjectExecReturn* Thickness::execute()
     short mode = (short)Mode.getValue();
     short join = (short)Join.getValue();
 
-    this->Shape.setValue(TopoShape(0, getDocument()->getStringHasher())
-                             .makeElementThickSolid(base,
-                                                    shapes,
-                                                    thickness,
-                                                    tol,
-                                                    inter,
-                                                    self,
-                                                    mode,
-                                                    static_cast<JoinType>(join)));
+    try {
+        this->Shape.setValue(TopoShape(0, getDocument()->getStringHasher())
+                                 .makeElementThickSolid(base,
+                                                        shapes,
+                                                        thickness,
+                                                        tol,
+                                                        inter,
+                                                        self,
+                                                        mode,
+                                                        static_cast<JoinType>(join)));
+    }
+    catch (Base::Exception& e) {
+        return new App::DocumentObjectExecReturn(e.what());
+    }
+    catch (Standard_Failure& e) {
+        return new App::DocumentObjectExecReturn(e.GetMessageString());
+    }
     return Part::Feature::execute();
 }
 

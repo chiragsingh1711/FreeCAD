@@ -3045,6 +3045,28 @@ TopoShape& TopoShape::makeElementThickSolid(const TopoShape& shape,
                                  intersection ? Standard_True : Standard_False,
                                  selfInter ? Standard_True : Standard_False,
                                  GeomAbs_JoinType(join));
+
+    // Check if the operation succeeded
+    if (!mkThick.IsDone()) {
+        FC_THROWM(Base::CADKernelError,
+                  "Failed to create thickness: the operation did not complete successfully");
+    }
+
+    // Check if the resulting shape is valid
+    TopoDS_Shape resultShape = mkThick.Shape();
+    if (resultShape.IsNull()) {
+        FC_THROWM(NullShapeException,
+                  "Failed to create thickness: resulting shape is null");
+    }
+
+    BRepCheck_Analyzer check(resultShape);
+    if (!check.IsValid()) {
+        FC_THROWM(Base::CADKernelError,
+                  "Failed to create thickness: the thickness value may be too large for this geometry. "
+                  "Try reducing the thickness value or checking that it does not equal or exceed "
+                  "the minimum dimension of the shape");
+    }
+
     return makeElementShape(mkThick, shape, op);
 }
 

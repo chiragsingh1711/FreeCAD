@@ -146,6 +146,10 @@ App::DocumentObjectExecReturn *Thickness::execute() {
                                                   static_cast<Part::JoinType>(join));
                 shapes.push_back(res);
             }
+            catch (Base::Exception& e) {
+                FC_ERR("Exception on making thick solid: " << e.what());
+                return new App::DocumentObjectExecReturn(e.what());
+            }
             catch (Standard_Failure& e) {
                 FC_ERR("Exception on making thick solid: " << e.GetMessageString());
                 return new App::DocumentObjectExecReturn("Failed to make thick solid");

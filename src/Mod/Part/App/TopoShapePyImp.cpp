@@ -1252,6 +1252,10 @@ PyObject* TopoShapePy::makeThickness(PyObject *args) const
                                                      offsetMode,
                                                      static_cast<JoinType>(join))));
     }
+    catch (Base::Exception& e) {
+        PyErr_SetString(PartExceptionOCCError, e.what());
+        return nullptr;
+    }
     catch (Standard_Failure& e) {
         PyErr_SetString(PartExceptionOCCError, e.GetMessageString());
         return nullptr;
