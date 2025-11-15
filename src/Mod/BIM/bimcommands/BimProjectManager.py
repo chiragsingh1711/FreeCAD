@@ -120,7 +120,9 @@ class BIM_ProjectManager:
                 elif hasattr(self.site, "RefElevation"):
                     self.form.siteElevation.setText(self.site.RefElevation.UserString)
                 if hasattr(self.site, "Declination"):
-                    self.form.siteElevation.setText(str(self.site.Declination))
+                    self.form.siteDeviation.setValue(self.site.Declination)
+                elif hasattr(self.site, "NorthDeviation"):
+                    self.form.siteDeviation.setValue(self.site.NorthDeviation)
             buildings = []
             if self.site and self.project:
                 from nativeifc import ifc_tools
