@@ -117,12 +117,10 @@ class TaskFillTemplateFields:
 
                 projgrp_view = None
                 for pageObj in obj.Views:
-                    if (
-                        pageObj.isDerivedFrom("TechDraw::DrawViewPart") 
-                        or pageObj.isDerivedFrom("TechDraw::DrawProjGroup")
-                    ):
-                        # use the scale from the first DVP or DPG encountered to fill the template's
-                        # Scale editable text. 
+                    # use the scale from the first view with a Scale attribute encountered
+                    # to fill the template's Scale editable text.
+                    # This includes DrawViewPart, DrawProjGroup, DrawViewDraft, and others.
+                    if hasattr(pageObj, "Scale"):
                         projgrp_view = pageObj
                         break
 
