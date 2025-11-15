@@ -3176,15 +3176,48 @@ struct EdgePoints
         , edge(&*it)
     {
         TopExp_Explorer xp(it->getShape(), TopAbs_VERTEX);
-        v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
-        xp.Next();
+
+        // Check if edge has vertices before accessing them
         if (xp.More()) {
-            v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
-            closed = (v2.SquareDistance(v1) <= tol);
+            // Standard case: edge has proper vertex topology
+            v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+            xp.Next();
+            if (xp.More()) {
+                v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+                closed = (v2.SquareDistance(v1) <= tol);
+            }
+            else {
+                v2 = v1;
+                closed = true;
+            }
         }
         else {
-            v2 = v1;
-            closed = true;
+            // Fallback: edge has no vertices, get endpoints from curve geometry
+            // This can happen with edges from reflectLines and other operations
+            try {
+                const TopoDS_Edge& occEdge = TopoDS::Edge(it->getShape());
+
+                // Check if edge is degenerated
+                if (BRep_Tool::Degenerated(occEdge)) {
+                    // Degenerated edge - both points are the same
+                    v1 = v2 = gp_Pnt(0, 0, 0);
+                    closed = true;
+                }
+                else {
+                    // Get curve and extract endpoints
+                    BRepAdaptor_Curve curve(occEdge);
+                    Standard_Real first = curve.FirstParameter();
+                    Standard_Real last = curve.LastParameter();
+                    v1 = curve.Value(first);
+                    v2 = curve.Value(last);
+                    closed = (v2.SquareDistance(v1) <= tol);
+                }
+            }
+            catch (...) {
+                // If all else fails, treat as a degenerate point edge
+                v1 = v2 = gp_Pnt(0, 0, 0);
+                closed = true;
+            }
         }
     }
 };

@@ -173,9 +173,44 @@ PartExport std::list<TopoDS_Edge> sort_Edges(double tol3d, std::list<TopoDS_Edge
     for (std::list<TopoDS_Edge>::iterator it = edges.begin(); it != edges.end(); ++it) {
         EdgePoints ep;
         xp.Init(*it,TopAbs_VERTEX);
-        ep.v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
-        xp.Next();
-        ep.v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+
+        // Check if edge has vertices before accessing them
+        if (xp.More()) {
+            // Standard case: edge has proper vertex topology
+            ep.v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+            xp.Next();
+            if (xp.More()) {
+                ep.v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+            }
+            else {
+                // Edge has only one vertex
+                ep.v2 = ep.v1;
+            }
+        }
+        else {
+            // Fallback: edge has no vertices, get endpoints from curve geometry
+            // This can happen with edges from reflectLines and other operations
+            try {
+                // Check if edge is degenerated
+                if (BRep_Tool::Degenerated(*it)) {
+                    // Degenerated edge - both points are the same
+                    ep.v1 = ep.v2 = gp_Pnt(0, 0, 0);
+                }
+                else {
+                    // Get curve and extract endpoints
+                    BRepAdaptor_Curve curve(*it);
+                    Standard_Real first = curve.FirstParameter();
+                    Standard_Real last = curve.LastParameter();
+                    ep.v1 = curve.Value(first);
+                    ep.v2 = curve.Value(last);
+                }
+            }
+            catch (...) {
+                // If all else fails, treat as a degenerate point edge
+                ep.v1 = ep.v2 = gp_Pnt(0, 0, 0);
+            }
+        }
+
         ep.it = it;
         ep.edge = *it;
         edge_points.push_back(ep);
